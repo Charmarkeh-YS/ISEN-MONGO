@@ -1,0 +1,40 @@
+# -*- coding: utf-8 -*-
+# Question - 3 
+# User program: 
+# give available stations name next to the user lat, lon with last data (bikes and stand)
+
+
+import requests
+import json
+from pprint import pprint
+from pymongo import MongoClient, DESCENDING
+
+
+client = MongoClient("mongodb+srv://123456:khalil1234@cluster0.welnc.mongodb.net/test?retryWrites=true&w=majority")
+db = client.vls 
+collection_vlilles = db.vlilles 
+collection_stations = db.stations
+
+
+# Input of user lng and lat :
+user_lng = input("Your lng(longitude) : ")
+user_lat = input("Your lat(latitude)  : ")
+
+
+
+# Giving available stations next to the user lat and lon : 
+near_station = collection_stations.find({
+    "geo": {
+     "$near": {
+       "$geometry": {
+          "type": "Point" ,
+          "coordinates": [ float(user_lng) , float(user_lat) ]
+       }
+     }
+   }})[0]
+
+
+# Last data (with station name) sort by descending record timestamp :
+latest_data = collection_vlilles.find({"name":near_station["name"],}).sort("record_timestamp",DESCENDING).next()
+
+pprint(latest_data)
